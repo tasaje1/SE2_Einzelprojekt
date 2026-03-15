@@ -7,6 +7,7 @@ import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import org.mockito.Mockito.`when` as whenever // when is a reserved keyword in Kotlin
 
 class LeaderboardControllerTests {
@@ -28,7 +29,7 @@ class LeaderboardControllerTests {
 
         whenever(mockedService.getGameResults()).thenReturn(listOf(second, first, third))
 
-        val res: List<GameResult> = controller.getLeaderboard()
+        val res: List<GameResult> = controller.getLeaderboard(null)
 
         verify(mockedService).getGameResults()
         assertEquals(3, res.size)
@@ -45,13 +46,40 @@ class LeaderboardControllerTests {
 
         whenever(mockedService.getGameResults()).thenReturn(listOf(second, first, third))
 
-        val res: List<GameResult> = controller.getLeaderboard()
+        val res: List<GameResult> = controller.getLeaderboard(null)
 
         verify(mockedService).getGameResults()
         assertEquals(3, res.size)
         assertEquals(second, res[0])
         assertEquals(third, res[1])
         assertEquals(first, res[2])
+    }
+
+    @Test
+    fun test_getLeaderboard_withRank() {
+
+        val first = GameResult(1, "A", 30, 10.0)
+        val second = GameResult(2, "B", 25, 10.0)
+        val third = GameResult(3, "C", 20, 10.0)
+
+        whenever(mockedService.getGameResults()).thenReturn(listOf(first, second, third))
+
+        val res = controller.getLeaderboard(2)
+
+        assertEquals(3, res.size)
+    }
+
+    @Test
+    fun test_getLeaderboard_invalidRank_throwsException() {
+
+        val first = GameResult(1, "first", 20, 20.0)
+        val second = GameResult(2, "second", 15, 10.0)
+
+        whenever(mockedService.getGameResults()).thenReturn(listOf(first, second))
+
+        assertFailsWith<IllegalArgumentException> {
+            controller.getLeaderboard(0)
+        }
     }
 
 }
